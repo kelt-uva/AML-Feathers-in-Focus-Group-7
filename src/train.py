@@ -7,6 +7,8 @@ from torch import nn
 from torch.utils.data import DataLoader, Subset
 from dataset import BirdDataset, get_transforms
 from model import create_efficientnet
+import time
+import matplotlib.pyplot as plt
 
 
 def set_seed(seed = 42):
@@ -95,6 +97,27 @@ def validate_one_epoch(model, loader, criterion, device):
     epoch_acc = correct / total
     return epoch_loss, epoch_acc
 
+def visualize_loss(epoch, train_loss, val_loss):
+    plt.figsize = (12, 8)
+    plt.plot(epoch, train_loss, color = "blue", label = "Training loss")
+    plt.plot(epoch, val_loss, color = "orange", label = "Validation loss")
+    plt.xlabel("Epoch")
+    plt.ylabel("Loss")
+    plt.title("Training and validation loss across epochs")
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+def visualize_accuracy(epoch, train_acc, val_acc):
+    plt.figsize = (12, 8)
+    plt.plot(epoch, train_acc, color = "blue", label = "Training accuracy")
+    plt.plot(epoch, val_acc, color = "orange", label = "Validation accuracy")
+    plt.xlabel("Epoch")
+    plt.ylabel("Accuracy")
+    plt.title("Training and validation accuracy across epochs")
+    plt.legend()
+    plt.grid(True)
+    plt.show()
 
 def main():
     set_seed(42)
@@ -103,6 +126,7 @@ def main():
     train_csv_path = project_root / "train_images.csv"
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+   
     print("Using device:", device)
 
 
@@ -129,6 +153,13 @@ def main():
     best_val_acc = 0.0
     best_model_path = project_root / "best_efficientnet_b0.pth"
 
+    current_epoch = []
+    train_acc_epochs = []
+    val_acc_epochs = []
+
+    train_loss_epoch = []
+    val_loss_epoch = []
+
     for epoch in range(1, num_epochs + 1):
         print(f"\nEpoch {epoch}/{num_epochs}")
 
@@ -143,6 +174,26 @@ def main():
             best_val_acc = val_acc
             torch.save(model.state_dict(), best_model_path)
             print(f"Best model saved to {best_model_path} (val_acc={best_val_acc:.4f})")
+    
+        # Saving losses and accuracies into variables
+        current_epoch.append(epoch)
+        train_acc_epochs.append(train_acc)
+        val_acc_epochs.append(val_acc)
+
+        train_loss_epoch.append(train_loss)
+        val_loss_epoch.append(val_loss)
+
+    # visualization of training and validation loss and accuracy
+        visualize_loss(current_epoch, train_loss_epoch, val_loss_epoch)
+        visualize_accuracy(current_epoch, train_acc_epochs, val_acc_epochs)
+
+    # Creating a dataframe of the results and saving them to csv file
+    all_metrics = np.array([current_epoch, train_loss_epoch, train_acc_epochs, val_loss_epoch , val_acc_epochs])
+    all_metrics_df = pd.DataFrame(all_metrics, index = ['Epoch', 'Train_loss', 'Train_acc', 'Val_loss', 'Val_acc'])
+
+    timestamp = time.strftime("%Y-%m-%d_%H-%M-%S")
+
+    all_metrics_df.to_csv(f"All_metrics_{timestamp}.csv")
 
     print("\nTraining complete.")
     print(f"Best validation accuracy: {best_val_acc:.4f}")
