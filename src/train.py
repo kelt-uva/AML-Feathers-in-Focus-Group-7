@@ -184,8 +184,8 @@ def main():
         val_loss_epoch.append(val_loss)
 
     # visualization of training and validation loss and accuracy
-        visualize_loss(current_epoch, train_loss_epoch, val_loss_epoch)
-        visualize_accuracy(current_epoch, train_acc_epochs, val_acc_epochs)
+    visualize_loss(current_epoch, train_loss_epoch, val_loss_epoch)
+    visualize_accuracy(current_epoch, train_acc_epochs, val_acc_epochs)
 
     # Creating a dataframe of the results and saving them to csv file
     all_metrics = np.array([current_epoch, train_loss_epoch, train_acc_epochs, val_loss_epoch , val_acc_epochs])
