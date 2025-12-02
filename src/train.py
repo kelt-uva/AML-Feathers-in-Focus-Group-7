@@ -6,7 +6,7 @@ import torch
 from torch import nn
 from torch.utils.data import DataLoader, Subset
 from dataset import BirdDataset, get_transforms
-from model import create_efficientnet
+from model import create_efficientnet, create_own_model
 import time
 import matplotlib.pyplot as plt
 
@@ -146,7 +146,7 @@ def main():
 
     # Model, loss, optimizer
     model = create_efficientnet(num_classes=num_classes, model_name=model_name, pretrained=True, dropout=0.2).to(device)
-
+    model = create_own_model()
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate, weight_decay=1e-2)
 

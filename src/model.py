@@ -60,9 +60,30 @@ def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
 
+def create_own_model():
+    #ide megcsinalod a modellled
+
+    new_model = nn.Sequential(
+        nn.Conv2d(3, 16, kernel_size = 3, padding = 1),
+        nn.ELU(),
+        nn.MaxPool2d(kernel_size = 2),
+        nn.Conv2d(16, 32, kernel_size = 3, padding = 1),
+        nn.ELU(),
+        nn.MaxPool2d(kernel_size = 2),
+        nn.Conv2d(32, 64, kernel_size = 3, padding = 1),
+        nn.ELU(),
+        nn.MaxPool2d(kernel_size = 2),
+        nn.Flatten(),
+        nn.Linear(64 * 28 * 28, 200)
+    )
+
+    return new_model
+
+
 if __name__ == "__main__":
     m = create_efficientnet(num_classes=200)
     print("Model created:", m.__class__.__name__)
     print("Trainable parameters:", count_parameters(m))
     # Uncomment to see full architecture:
     # print(m)
+    create_own_model()
