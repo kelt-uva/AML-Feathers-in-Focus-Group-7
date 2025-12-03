@@ -61,20 +61,34 @@ def count_parameters(model):
 
 
 def create_own_model():
-    #ide megcsinalod a modellled
+    # this is the new model
 
     new_model = nn.Sequential(
+        # layer 1
         nn.Conv2d(3, 16, kernel_size = 3, padding = 1),
         nn.ELU(),
         nn.MaxPool2d(kernel_size = 2),
+        # layer 2
         nn.Conv2d(16, 32, kernel_size = 3, padding = 1),
+        nn.BatchNorm2d(32),
         nn.ELU(),
         nn.MaxPool2d(kernel_size = 2),
+        # layer 3
         nn.Conv2d(32, 64, kernel_size = 3, padding = 1),
+        nn.BatchNorm2d(64),
+        nn.ELU(),
+        nn.MaxPool2d(kernel_size = 2),
+        # layer 4
+        nn.Conv2d(64, 128, kernel_size = 3, padding = 1),
+        nn.BatchNorm2d(128),
+        nn.ELU(),
+        nn.MaxPool2d(kernel_size = 2),
+        # layer 5
+        nn.Conv2d(128, 256, kernel_size = 3, padding = 1),
         nn.ELU(),
         nn.MaxPool2d(kernel_size = 2),
         nn.Flatten(),
-        nn.Linear(64 * 28 * 28, 200)
+        nn.Linear(256 * 7 * 7, 200)
     )
 
     return new_model
