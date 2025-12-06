@@ -6,6 +6,9 @@ from PIL import Image
 import torch
 from torch.utils.data import Dataset
 from torchvision import transforms
+import os
+
+
 
 # Applies general transormations to images
 def get_transforms(train, image_size):
@@ -20,14 +23,25 @@ def get_transforms(train, image_size):
 
     if train:
         aug = [
+            transforms.Resize((image_size, image_size)),
             transforms.RandomHorizontalFlip(),
             transforms.ColorJitter(
                 brightness=0.2,
                 contrast=0.2,
                 saturation=0.2,
             ),
+            transforms.RandomAffine(degrees = 0, translate = (0.05, 0.05)),
+            transforms.RandomRotation(degrees = 0.45),
+            transforms.ToTensor(),
+            transforms.Normalize(
+                mean=[0.485, 0.456, 0.406],
+                std=[0.229, 0.224, 0.225],
+            ),
+            transforms.RandomErasing()
+
+
         ]
-        return transforms.Compose(aug + base)
+        return transforms.Compose(aug)
 
     return transforms.Compose(base)
 

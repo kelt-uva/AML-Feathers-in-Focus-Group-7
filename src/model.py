@@ -64,51 +64,45 @@ def create_own_model():
     # this is the new model
 
     new_model = nn.Sequential(
-        
-        # Convolution block 1
+        # layer 1
         nn.Conv2d(3, 16, kernel_size = 3, padding = 1),
-        nn.BatchNorm2d(16),
-        nn.ELU(),
-        nn.Conv2d(16, 16, kernel_size = 3, padding = 1),
-        nn.BatchNorm2d(16),
         nn.ELU(),
         nn.MaxPool2d(kernel_size = 2),
-
-        # Convolution block 2
+        # layer 2
         nn.Conv2d(16, 32, kernel_size = 3, padding = 1),
         nn.BatchNorm2d(32),
         nn.ELU(),
-        nn.Conv2d(32, 32, kernel_size = 3, padding = 1),
-        nn.BatchNorm2d(32),
-        nn.ELU(),
         nn.MaxPool2d(kernel_size = 2),
-        # Convolution block 3
+        # layer 3
         nn.Conv2d(32, 64, kernel_size = 3, padding = 1),
         nn.BatchNorm2d(64),
         nn.ELU(),
-        nn.Conv2d(64, 64, kernel_size = 3, padding = 1),
-        nn.BatchNorm2d(64),
-        nn.ELU(),
         nn.MaxPool2d(kernel_size = 2),
-        nn.Dropout(0.2),
-
-        # Convolution block 4
+        # layer 4
         nn.Conv2d(64, 128, kernel_size = 3, padding = 1),
-        nn.BatchNorm2d(128),
-        nn.ELU(),
-        nn.Conv2d(128, 128, kernel_size = 3, padding = 1),
         nn.BatchNorm2d(128),
         nn.ELU(),
         nn.MaxPool2d(kernel_size = 2),
         nn.Dropout(0.3),
-
-        # Linear layers
-        nn.Flatten(),
-        nn.Linear(128 * 14 * 14, 256),
-        nn.BatchNorm1d(256),
+        # layer 5
+        nn.Conv2d(128, 256, kernel_size = 3, padding = 1),
         nn.ELU(),
-        nn.Dropout(p = 0.5),
-        nn.Linear(256, 200)
+        nn.MaxPool2d(kernel_size = 2),
+        # Bottleneck layer
+        nn.Conv2d(256, 128, kernel_size = 1),
+        nn.ELU(),
+        nn.Conv2d(128, 256, kernel_size = 1),
+        nn.ELU(),
+        # Layer 6
+        nn.Conv2d(256, 512, kernel_size = 3, padding = 1),
+        nn.ELU(),
+        nn.AdaptiveMaxPool2d((3, 3)),
+        nn.Dropout(0.4),
+        nn.Flatten(),
+        nn.Linear(512 * 3 * 3, 512),
+        nn.ELU(),
+        nn.Dropout(0.3),
+        nn.Linear(512, 200),
     )
 
     return new_model
