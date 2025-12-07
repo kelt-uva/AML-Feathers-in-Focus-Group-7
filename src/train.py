@@ -139,7 +139,7 @@ def visualize_loss(epoch, train_loss, val_loss, save_path):
     plt.legend()
     plt.grid(True)
     fig.savefig(save_path)
-    print("imgage_1 saved")
+    print("loss figure saved")
     plt.close(fig)
 
 def visualize_accuracy(epoch, train_acc, val_acc, save_path):
@@ -153,6 +153,7 @@ def visualize_accuracy(epoch, train_acc, val_acc, save_path):
     plt.legend()
     plt.grid(True)
     fig.savefig(save_path)
+    print("accuracy figure saved")
     plt.close(fig)
 
 def main():
@@ -198,7 +199,7 @@ def main():
 
     best_val_acc = 0.0
     best_val_f1 = 0.0
-    best_model_path = project_root / "best_efficientnet_b0.pth"
+    best_model_path = project_root / "best_custom_model.pth"
 
     current_epoch = []
     train_acc_epochs = []

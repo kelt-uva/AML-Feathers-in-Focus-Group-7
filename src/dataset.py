@@ -23,7 +23,6 @@ def get_transforms(train, image_size):
 
     if train:
         aug = [
-            transforms.Resize((image_size, image_size)),
             transforms.RandomHorizontalFlip(),
             transforms.ColorJitter(
                 brightness=0.2,
@@ -32,16 +31,8 @@ def get_transforms(train, image_size):
             ),
             transforms.RandomAffine(degrees = 0, translate = (0.05, 0.05)),
             transforms.RandomRotation(degrees = 0.45),
-            transforms.ToTensor(),
-            transforms.Normalize(
-                mean=[0.485, 0.456, 0.406],
-                std=[0.229, 0.224, 0.225],
-            ),
-            transforms.RandomErasing()
-
-
         ]
-        return transforms.Compose(aug)
+        return transforms.Compose(aug + base + [transforms.RandomErasing()])
 
     return transforms.Compose(base)
 
