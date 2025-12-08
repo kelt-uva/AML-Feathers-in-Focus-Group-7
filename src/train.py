@@ -15,7 +15,7 @@ from transformers import get_cosine_schedule_with_warmup
 from sklearn.metrics import f1_score
 
 
-def set_seed(seed = 42):
+def set_seed(seed = 777):
     np.random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
@@ -53,7 +53,8 @@ def create_dataloaders(train_csv_path, batch_size = 256, val_frac = 0.1, image_s
     val_dataset = BirdDataset(csv_path=train_csv_path, transform=get_transforms(False, image_size=image_size), has_labels=True)
     val_subset = Subset(val_dataset, val_idx)
 
-    train_loader = DataLoader(train_subset, batch_size=batch_size, shuffle=True, num_workers=1, pin_memory=True, persistent_workers = True)
+    # Remove sampler = sampler if you want to use fixed learning rate
+    train_loader = DataLoader(train_subset, batch_size=batch_size, shuffle=False, sampler = sampler, num_workers=1, pin_memory=True, persistent_workers = True)
 
     val_loader = DataLoader(val_subset, batch_size=batch_size, shuffle=False, num_workers=1, pin_memory=True, persistent_workers = True)
 
@@ -80,7 +81,8 @@ def train_one_epoch(model, loader, criterion, optimizer, device, scheduler):
 
         loss.backward()
         optimizer.step()
-        #scheduler.step()
+        if scheduler is not None:
+            scheduler.step()
 
         running_loss += loss.item() * images.size(0)
 
@@ -157,7 +159,7 @@ def visualize_accuracy(epoch, train_acc, val_acc, save_path):
     plt.close(fig)
 
 def main():
-    set_seed(42)
+    set_seed(777)
 
     project_root = Path(__file__).resolve().parents[0]  
     train_csv_path = project_root / "train_images.csv"
@@ -195,7 +197,7 @@ def main():
     step_per_epoch = train_size/batch_size
     num_training_steps = num_epochs * step_per_epoch
     num_warmup_steps = num_training_steps * 0.1
-    #scheduler = get_cosine_schedule_with_warmup(optimizer, num_warmup_steps = num_warmup_steps, num_training_steps = num_training_steps)
+    scheduler = get_cosine_schedule_with_warmup(optimizer, num_warmup_steps = num_warmup_steps, num_training_steps = num_training_steps)
 
     best_val_acc = 0.0
     best_val_f1 = 0.0
@@ -213,7 +215,8 @@ def main():
     for epoch in range(1, num_epochs + 1):
         print(f"\nEpoch {epoch}/{num_epochs}")
 
-        train_loss, train_acc, train_f1 = train_one_epoch(model, train_loader, criterion, optimizer, device, scheduler = 0)
+        # To disable the scheduler, set it to None
+        train_loss, train_acc, train_f1 = train_one_epoch(model, train_loader, criterion, optimizer, device, scheduler = scheduler)
         print(f"Train  - Loss: {train_loss:.4f} | Acc: {train_acc:.4f} | F1: {train_f1:.4f}")
 
         val_loss, val_acc, val_f1 = validate_one_epoch(model, val_loader, criterion, device)

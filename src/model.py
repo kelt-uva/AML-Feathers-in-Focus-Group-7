@@ -89,9 +89,14 @@ def create_own_model():
         nn.ELU(),
         nn.MaxPool2d(kernel_size = 2),
         # Bottleneck layer
-        nn.Conv2d(256, 128, kernel_size = 1),
+        nn.Conv2d(256, 64, kernel_size = 1),
+        nn.BatchNorm2d(64),
         nn.ELU(),
-        nn.Conv2d(128, 256, kernel_size = 1),
+        nn.Conv2d(64, 64, kernel_size = 3, padding = 1),
+        nn.BatchNorm2d(64),
+        nn.ELU(),
+        nn.Conv2d(64, 256, kernel_size = 1),
+        nn.BatchNorm2d(256),
         nn.ELU(),
         # Layer 6
         nn.Conv2d(256, 512, kernel_size = 3, padding = 1),
@@ -110,6 +115,8 @@ def create_own_model():
 
 if __name__ == "__main__":
     m = create_efficientnet(num_classes=200)
+    # Next row calculates the parameter number of our model
+    #m = create_own_model()
     print("Model created:", m.__class__.__name__)
     print("Trainable parameters:", count_parameters(m))
     # Uncomment to see full architecture:
