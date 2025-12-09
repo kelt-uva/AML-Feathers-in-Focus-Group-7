@@ -158,7 +158,7 @@ def visualize_accuracy(epoch, train_acc, val_acc, save_path):
     print("accuracy figure saved")
     plt.close(fig)
 
-def main():
+def main(batch_size = 32, num_epochs = 50, learning_rate = 2e-4, weight_decay = 1e-2):
     set_seed(777)
 
     project_root = Path(__file__).resolve().parents[0]  
@@ -170,10 +170,7 @@ def main():
 
 
     # Hyperparameters
-    batch_size = 32
-    num_epochs = 50
     image_size = 224
-    learning_rate = 2e-4
     model_name = "efficientnet_b0"
     val_frac = 0.1
 
@@ -262,6 +259,8 @@ def main():
     print("\nTraining complete.")
     print(f"Best validation accuracy: {best_val_acc:.4f} Best validation f1: {best_val_f1}")
 
+    # for crossval file
+    return best_val_acc, best_val_f1
 
 if __name__ == "__main__":
     main()
