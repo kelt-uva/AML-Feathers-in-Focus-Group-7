@@ -11,24 +11,30 @@ def run():
     os.makedirs(os.path.dirname(save_path), exist_ok = True)
 
     results = {}
-    parameter_combinations = []
+    parameter_batch_size = []
+    parameter_learning_rate = []
+    parameter_weight_decay = []
     accuracies = []
     f1_scores = []
 
-    batch_sizes = [30]
-    learning_rates = [1e-2]
-    weight_decays = [1e-2]
+    batch_sizes = [32]
+    learning_rates = [1e-2, 1e-3, 5e-4, 1e-4, 5e-5]
+    weight_decays = [1e-2, 1e-3, 5e-4, 1e-4]
 
     for batch_size in batch_sizes:
         for learning_rate in learning_rates:
             for weight_decay in weight_decays:
                 print(f"Running training with batch_size={batch_size}, learning_rate={learning_rate}, weight_decay={weight_decay}")
                 acc, f1 = main(batch_size=batch_size, learning_rate=learning_rate, weight_decay=weight_decay)
-                parameter_combinations.append(f'batch_size = {batch_size}, learning_rate = {learning_rate}, weight_decay = {weight_decay}')
+                parameter_batch_size.append(batch_size),
+                parameter_learning_rate.append(learning_rate),
+                parameter_weight_decay.append(weight_decay),
                 accuracies.append(acc)
                 f1_scores.append(f1)
 
-    results['Parameter Combination'] = parameter_combinations
+    results['Batch size'] = parameter_batch_size
+    results['Learning rate'] = parameter_learning_rate
+    results['Weight decay'] = parameter_weight_decay
     results['Validation Accuracy'] = accuracies
     results['Validation F1 Score'] = f1_scores
     results_df = pd.DataFrame(results)
