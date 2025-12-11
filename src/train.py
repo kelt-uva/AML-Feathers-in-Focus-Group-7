@@ -158,7 +158,7 @@ def visualize_accuracy(epoch, train_acc, val_acc, save_path):
     print("accuracy figure saved")
     plt.close(fig)
 
-def main(batch_size = 32, num_epochs = 10, learning_rate = 2e-4, weight_decay = 1e-2):
+def main(batch_size = 32, num_epochs = 30, learning_rate = 2e-4, weight_decay = 1e-2):
     set_seed(777)
 
     project_root = Path(__file__).resolve().parents[0]  
@@ -198,6 +198,8 @@ def main(batch_size = 32, num_epochs = 10, learning_rate = 2e-4, weight_decay = 
 
     best_val_acc = 0.0
     best_val_f1 = 0.0
+    best_train_acc = 0.0
+    best_train_f1 = 0.0
     best_model_path = project_root / "best_custom_model.pth"
 
     current_epoch = []
@@ -228,6 +230,14 @@ def main(batch_size = 32, num_epochs = 10, learning_rate = 2e-4, weight_decay = 
         # Tracking best f1
         if val_f1 > best_val_f1:
             best_val_f1 = val_f1
+
+        # Tracking best training accuracy
+        if train_acc > best_train_acc:
+            best_train_acc = train_acc
+        
+        # Tracking best training f1
+        if train_f1 > best_train_f1:
+            best_train_f1 = train_f1
     
         # Saving losses, accuracies, and f1s into variables
         current_epoch.append(epoch)
@@ -260,7 +270,7 @@ def main(batch_size = 32, num_epochs = 10, learning_rate = 2e-4, weight_decay = 
     print(f"Best validation accuracy: {best_val_acc:.4f} Best validation f1: {best_val_f1}")
 
     # for crossval file
-    return best_val_acc, best_val_f1
+    return best_train_acc, best_train_f1, best_val_acc, best_val_f1
 
 if __name__ == "__main__":
     main()
