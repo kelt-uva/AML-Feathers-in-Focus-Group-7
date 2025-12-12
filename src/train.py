@@ -9,7 +9,9 @@ from torch.utils.data import DataLoader, Subset
 from dataset import BirdDataset, get_transforms
 from model import create_efficientnet, create_own_model, create_simple_model, create_deep_wide, create_vgg
 import time
+import matplotlib
 import matplotlib.pyplot as plt
+matplotlib.use('Agg')
 from torch.utils.data import WeightedRandomSampler
 from transformers import get_cosine_schedule_with_warmup
 from sklearn.metrics import f1_score
@@ -62,7 +64,7 @@ def create_dataloaders(train_csv_path, batch_size = 32, val_frac = 0.1, image_si
     return train_loader, val_loader
 
 
-def train_one_epoch(model, loader, criterion, optimizer, device, scheduler):
+def train_one_epoch(model, loader, criterion, optimizer, device):
     model.train()
     running_loss = 0.0
     correct = 0
@@ -82,8 +84,6 @@ def train_one_epoch(model, loader, criterion, optimizer, device, scheduler):
 
         loss.backward()
         optimizer.step()
-        if scheduler is not None:
-            scheduler.step()
 
         running_loss += loss.item() * images.size(0)
 
@@ -105,6 +105,7 @@ def validate_one_epoch(model, loader, criterion, device):
     running_loss = 0.0
     correct = 0
     total = 0
+    correct_top3 = 0
 
     # Collecting labels and predictions
     all_labels = []
@@ -121,6 +122,8 @@ def validate_one_epoch(model, loader, criterion, device):
             running_loss += loss.item() * images.size(0)
             _, preds = outputs.max(1)
             correct += (preds == labels).sum().item()
+            _, top3_preds = torch.topk(outputs, k = 3, dim = 1)
+            correct_top3 += (top3_preds == labels.view(-1, 1)).sum().item()
             total += labels.size(0)
 
             all_labels.extend(labels.cpu().numpy())
@@ -128,8 +131,9 @@ def validate_one_epoch(model, loader, criterion, device):
 
     epoch_loss = running_loss / total
     epoch_acc = correct / total
+    epoch_top3_acc = round(correct_top3 / total, 4)
     epoch_f1 = f1_score(all_labels, all_preds, average = "macro")
-    return epoch_loss, epoch_acc, epoch_f1
+    return epoch_loss, epoch_acc, epoch_top3_acc, epoch_f1
 
 def visualize_loss(epoch, train_loss, val_loss, save_path):
     os.makedirs(os.path.dirname(save_path), exist_ok = True)
@@ -195,15 +199,8 @@ def main(batch_size = 32, num_epochs = 50, learning_rate = 2e-4, weight_decay = 
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
 
-    df_csv = pd.read_csv(train_csv_path)
-    data_size = len(df_csv)
-    train_size = data_size * (1 - val_frac)
-    step_per_epoch = train_size/batch_size
-    num_training_steps = num_epochs * step_per_epoch
-    num_warmup_steps = num_training_steps * 0.1
-    #scheduler = get_cosine_schedule_with_warmup(optimizer, num_warmup_steps = num_warmup_steps, num_training_steps = num_training_steps)
-
     best_val_acc = 0.0
+    best_val_top3_acc = 0.0
     best_val_f1 = 0.0
     best_train_acc = 0.0
     best_train_f1 = 0.0
@@ -221,12 +218,11 @@ def main(batch_size = 32, num_epochs = 50, learning_rate = 2e-4, weight_decay = 
     for epoch in range(1, num_epochs + 1):
         print(f"\nEpoch {epoch}/{num_epochs}")
 
-        # To disable the scheduler, set it to None
-        train_loss, train_acc, train_f1 = train_one_epoch(model, train_loader, criterion, optimizer, device, scheduler = None)
+        train_loss, train_acc, train_f1 = train_one_epoch(model, train_loader, criterion, optimizer, device)
         print(f"Train  - Loss: {train_loss:.4f} | Acc: {train_acc:.4f} | F1: {train_f1:.4f}")
 
-        val_loss, val_acc, val_f1 = validate_one_epoch(model, val_loader, criterion, device)
-        print(f"Val    - Loss: {val_loss:.4f} | Acc: {val_acc:.4f} | F1: {val_f1:.4f}")
+        val_loss, val_acc, val_top3_acc, val_f1 = validate_one_epoch(model, val_loader, criterion, device)
+        print(f"Val    - Loss: {val_loss:.4f} | Acc: {val_acc:.4f} | Top3 acc: {val_top3_acc} | F1: {val_f1:.4f}")
 
         # Save best model
         if val_acc > best_val_acc:
@@ -237,6 +233,10 @@ def main(batch_size = 32, num_epochs = 50, learning_rate = 2e-4, weight_decay = 
         # Tracking best f1
         if val_f1 > best_val_f1:
             best_val_f1 = val_f1
+        
+        # Tracking best top3 accuracy
+        if val_top3_acc > best_val_top3_acc:
+            best_val_top3_acc = val_top3_acc
 
         # Tracking best training accuracy
         if train_acc > best_train_acc:
@@ -274,7 +274,7 @@ def main(batch_size = 32, num_epochs = 50, learning_rate = 2e-4, weight_decay = 
     all_metrics_df.to_csv(f"./results/All_metrics_{timestamp}.csv")
 
     print("\nTraining complete.")
-    print(f"Best validation accuracy: {best_val_acc:.4f} Best validation f1: {best_val_f1}")
+    print(f"Best validation accuracy: {best_val_acc:.4f} Best validation top3 accuracy: {best_val_top3_acc} Best validation f1: {best_val_f1}")
 
     # for crossval file
     return best_train_acc, best_train_f1, best_val_acc, best_val_f1
