@@ -21,14 +21,12 @@ def run():
 
     batch_sizes = [32]
     learning_rates = [1e-2, 1e-3, 5e-4, 1e-4, 5e-5, 1e-5]
-    #learning_rates = [5e-5]
     weight_decays = [1e-2, 1e-3, 5e-4, 1e-4, 5e-5, 1e-5]
-    weight_decays = [1e-2]
     for batch_size in batch_sizes:
         for learning_rate in learning_rates:
             for weight_decay in weight_decays:
                 print(f"Running training with batch_size={batch_size}, learning_rate={learning_rate}, weight_decay={weight_decay}")
-                train_acc, train_f1, acc, f1 = main(batch_size=batch_size, learning_rate=learning_rate, weight_decay=weight_decay)
+                train_acc, train_f1, acc, f1 = main(batch_size=batch_size, learning_rate=learning_rate, weight_decay=weight_decay, num_epochs=30, tuning=True)
                 parameter_batch_size.append(batch_size),
                 parameter_learning_rate.append(learning_rate),
                 parameter_weight_decay.append(weight_decay),

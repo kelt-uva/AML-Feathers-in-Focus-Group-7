@@ -158,8 +158,15 @@ def visualize_accuracy(epoch, train_acc, val_acc, save_path):
     print("accuracy figure saved")
     plt.close(fig)
 
-def main(batch_size = 32, num_epochs = 30, learning_rate = 2e-4, weight_decay = 1e-2):
+def main(batch_size = 32, num_epochs = 50, learning_rate = 2e-4, weight_decay = 1e-2, tuning = False):
     set_seed(777)
+
+    if not tuning:
+        batch_size = 256 # for final model training using increased batch size
+        num_epochs = 50 # for final model training running more epochs
+        learning_rate = 1e-4 # highest f1 (see parameter_tuning.py and fitting_results.csv)
+        weight_decay = 1e-3 # highest f1 (see parameter_tuning.py and fitting_results.csv)
+    print(f"Batch size: {batch_size}, Num epochs: {num_epochs}, Learning rate: {learning_rate}, Weight decay: {weight_decay}")
 
     project_root = Path(__file__).resolve().parents[0]  
     train_csv_path = project_root / "train_images.csv"
