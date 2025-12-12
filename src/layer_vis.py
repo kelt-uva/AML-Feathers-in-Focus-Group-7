@@ -33,19 +33,19 @@ def get_model_blocks(model):
 def visualize_feature_maps(tensor, max_channels=16, title="", save_path=None):
     tensor = tensor[0]
     C, H, W = tensor.shape
-
-    C = min(C, max_channels)
     
-    fig, axes = plt.subplots(1, C, figsize=(2*C, 2))
+    fig, axes = plt.subplots(max_channels, 1, figsize=(2, 2*max_channels))
 
-    for i in range(C):
-        fmap = tensor[i].detach().cpu()
+    for i in range(max_channels):
+        j = np.random.randint(0, C)
+
+        fmap = tensor[j].detach().cpu()
         
         fmap = (fmap - fmap.min()) / (fmap.max() - fmap.min() + 1e-5)
 
         axes[i].imshow(fmap, cmap="Grays")
         axes[i].axis("off")
-        axes[i].set_title(f"Channel {i+1}")
+        axes[i].set_title(f"Channel {j}")
 
     plt.suptitle(title)
     plt.tight_layout()
@@ -93,8 +93,8 @@ def main():
 
         visualize_feature_maps(
             x, 
-            max_channels=6, 
-            title=f"Block {i+1} Output Feature Maps",
+            max_channels=2, 
+            title=f"Block {i+1} Output",
             save_path=save_path.format(i+1)
         )
 
