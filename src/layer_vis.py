@@ -13,7 +13,7 @@ def set_seed(seed = 42):
     torch.cuda.manual_seed_all(seed)
 
 def fetch_data(test_csv_path, image_size = 224):
-    test_dataset = BirdDataset(csv_path=test_csv_path, transform=get_transforms(False, image_size=image_size), has_labels=False)
+    test_dataset = BirdDataset(csv_path=test_csv_path, transform=get_transforms(False, image_size=image_size, example=True), has_labels=False)
     return test_dataset
 
 def get_model_blocks(model):
@@ -30,7 +30,7 @@ def get_model_blocks(model):
     if len(current_block) > 0:
         return blocks
 
-def visualize_feature_maps(tensor, max_channels=16, title=""):
+def visualize_feature_maps(tensor, max_channels=16, title="", save_path=None):
     tensor = tensor[0]
     C, H, W = tensor.shape
 
@@ -49,18 +49,18 @@ def visualize_feature_maps(tensor, max_channels=16, title=""):
 
     plt.suptitle(title)
     plt.tight_layout()
-    plt.show()
+    plt.savefig(save_path, dpi=300)
 
 def main():
 
-    set_seed(22)
+    set_seed(42)
 
     project_root = Path(__file__).resolve().parents[0]  
     test_csv_path = project_root / "test_images_path.csv"
 
-    save_path = project_root / f"./vis/layer_vis.csv"
+    save_path = project_root / "./example/layer_vis{}.png"
     os.makedirs(os.path.dirname(save_path), exist_ok = True)
-
+    save_path = str(save_path)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
    
     print("Using device:", device)
@@ -81,6 +81,11 @@ def main():
 
     blocks = get_model_blocks(model)
 
+    plt.imshow(np.transpose(random_image['image'].cpu().numpy(), (1, 2, 0)))
+    plt.axis("off")
+    plt.title("Input Image")
+    plt.savefig(save_path.format("input"), dpi=300)
+
     x = image_tensor
     for i, block in enumerate(blocks):
         x = block(x)
@@ -89,7 +94,8 @@ def main():
         visualize_feature_maps(
             x, 
             max_channels=6, 
-            title=f"Block {i+1} Output Feature Maps"
+            title=f"Block {i+1} Output Feature Maps",
+            save_path=save_path.format(i+1)
         )
 
 
