@@ -13,8 +13,6 @@ from dataset import BirdDataset, get_transforms
 from model import create_efficientnet, create_own_model, create_simple_model, create_deep_wide, create_vgg
 import time
 
-model = create_own_model()
-
 def set_seed(seed=777):
     np.random.seed(seed)
     torch.manual_seed(seed)
@@ -107,7 +105,7 @@ def plot_cv_results(results_df, save_dir):
     
     print(f"Saved to {save_dir}")
 
-def main(n_splits=5, num_epochs=30, batch_size=32, learning_rate=1e-4, weight_decay=5e-4, model=model):
+def main(n_splits=5, num_epochs=30, batch_size=32, learning_rate=1e-4, weight_decay=5e-4):
     set_seed(777)
     
     project_root = Path(__file__).resolve().parent
@@ -166,6 +164,7 @@ def main(n_splits=5, num_epochs=30, batch_size=32, learning_rate=1e-4, weight_de
             pin_memory=True
         )
         
+        model = create_own_model()
         model.to(device)
         criterion = nn.CrossEntropyLoss()
         optimizer = torch.optim.AdamW(
