@@ -56,7 +56,7 @@ def create_dataloaders(train_csv_path, batch_size = 32, val_frac = 0.1, image_si
     val_dataset = BirdDataset(csv_path=train_csv_path, transform=get_transforms(False, image_size=image_size), has_labels=True)
     val_subset = Subset(val_dataset, val_idx)
 
-    # Remove sampler = sampler if you want to use fixed learning rate
+    # Add sampler = sampler and set shuffle to False to do weighted sampling
     train_loader = DataLoader(train_subset, batch_size=batch_size, shuffle=True, num_workers=1, pin_memory=True, persistent_workers = True)
 
     val_loader = DataLoader(val_subset, batch_size=batch_size, shuffle=False, num_workers=1, pin_memory=True, persistent_workers = True)
@@ -133,7 +133,7 @@ def validate_one_epoch(model, loader, criterion, device):
     epoch_acc = correct / total
     epoch_top3_acc = round(correct_top3 / total, 4)
     epoch_f1 = f1_score(all_labels, all_preds, average = "macro")
-    return epoch_loss, epoch_acc, epoch_top3_acc, epoch_f1
+    return epoch_loss, epoch_acc, epoch_top3_acc, epoch_f1, all_preds, all_labels
 
 def visualize_loss(epoch, train_loss, val_loss, save_path):
     os.makedirs(os.path.dirname(save_path), exist_ok = True)
@@ -168,7 +168,7 @@ def main(batch_size = 32, num_epochs = 50, learning_rate = 2e-4, weight_decay = 
 
     if not tuning:
         batch_size = 32 # for final model training using increased batch size
-        num_epochs = 50 # for final model training running more epochs
+        num_epochs = 5 # for final model training running more epochs
         learning_rate = 1e-4 # highest f1 (see parameter_tuning.py and fitting_results.csv)
         weight_decay = 1e-3 # highest f1 (see parameter_tuning.py and fitting_results.csv)
     print(f"Batch size: {batch_size}, Num epochs: {num_epochs}, Learning rate: {learning_rate}, Weight decay: {weight_decay}")
@@ -221,12 +221,14 @@ def main(batch_size = 32, num_epochs = 50, learning_rate = 2e-4, weight_decay = 
         train_loss, train_acc, train_f1 = train_one_epoch(model, train_loader, criterion, optimizer, device)
         print(f"Train  - Loss: {train_loss:.4f} | Acc: {train_acc:.4f} | F1: {train_f1:.4f}")
 
-        val_loss, val_acc, val_top3_acc, val_f1 = validate_one_epoch(model, val_loader, criterion, device)
+        val_loss, val_acc, val_top3_acc, val_f1, predictions, true_labels = validate_one_epoch(model, val_loader, criterion, device)
         print(f"Val    - Loss: {val_loss:.4f} | Acc: {val_acc:.4f} | Top3 acc: {val_top3_acc} | F1: {val_f1:.4f}")
 
         # Save best model
         if val_acc > best_val_acc:
             best_val_acc = val_acc
+            best_predictions = predictions
+            labels = true_labels
             torch.save(model.state_dict(), best_model_path)
             print(f"Best model saved to {best_model_path} (val_acc={best_val_acc:.4f}) (val_f1 = {best_val_f1})")
         
@@ -272,6 +274,11 @@ def main(batch_size = 32, num_epochs = 50, learning_rate = 2e-4, weight_decay = 
     # Saving the metrics
     os.makedirs("./results", exist_ok = True)
     all_metrics_df.to_csv(f"./results/All_metrics_{timestamp}.csv")
+
+    # Saving predictions vs labels
+    predictions_vs_labels = pd.DataFrame({'Predictions': best_predictions, 'Labels': labels})
+    predictions_vs_labels.to_csv(f"./results/predictions_vs_labels_{timestamp}.csv")
+
 
     print("\nTraining complete.")
     print(f"Best validation accuracy: {best_val_acc:.4f} Best validation top3 accuracy: {best_val_top3_acc} Best validation f1: {best_val_f1}")
