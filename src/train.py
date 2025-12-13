@@ -168,7 +168,7 @@ def main(batch_size = 32, num_epochs = 50, learning_rate = 2e-4, weight_decay = 
 
     if not tuning:
         batch_size = 32 # for final model training using increased batch size
-        num_epochs = 5 # for final model training running more epochs
+        num_epochs = 50 # for final model training running more epochs
         learning_rate = 1e-4 # highest f1 (see parameter_tuning.py and fitting_results.csv)
         weight_decay = 1e-3 # highest f1 (see parameter_tuning.py and fitting_results.csv)
     print(f"Batch size: {batch_size}, Num epochs: {num_epochs}, Learning rate: {learning_rate}, Weight decay: {weight_decay}")
