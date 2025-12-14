@@ -277,8 +277,14 @@ def main(batch_size = 32, num_epochs = 50, learning_rate = 2e-4, weight_decay = 
 
     # Saving predictions vs labels
     predictions_vs_labels = pd.DataFrame({'Predictions': best_predictions, 'Labels': labels})
-    predictions_vs_labels.to_csv(f"./results/predictions_vs_labels_{timestamp}.csv")
 
+    # Read names of birds
+    bird_names = np.load("src/class_names.npy", allow_pickle=True).item()
+    reverse_bird_names = {number: bird for bird, number in bird_names.items()}
+    # Map bird names to predictions
+    predictions_vs_labels["Predicted bird name"] = predictions_vs_labels["Predictions"].map(reverse_bird_names)
+    predictions_vs_labels["Label bird name"] = predictions_vs_labels["Labels"].map(reverse_bird_names)
+    predictions_vs_labels.to_csv(f"./results/predictions_vs_labels_{timestamp}.csv")
 
     print("\nTraining complete.")
     print(f"Best validation accuracy: {best_val_acc:.4f} Best validation top3 accuracy: {best_val_top3_acc} Best validation f1: {best_val_f1}")
