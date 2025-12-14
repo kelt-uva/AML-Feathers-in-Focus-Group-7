@@ -49,3 +49,7 @@ C. Hughes, “Demystifying PyTorch’s WeightedRandomSampler by example,” Medi
 PyTorch Contributors, “torch.topk,” Pytorch.org, 2023. https://docs.pytorch.org/docs/stable/generated/torch.topk.html (accessed Dec. 14, 2025).
 
 Oreolorun Olu-Ipinlaye, “How Convolutional Autoencoders Power Deep Learning Applications,” Digitalocean.com, Oct. 14, 2022. https://www.digitalocean.com/community/tutorials/convolutional-autoencoder#bottleneck-and-details (accessed Dec. 14, 2025).
+
+M. Tan and Q. Le, “EfficientNet: Rethinking model scaling for convolutional neural networks,” in Proc. International Conference on Machine Learning (ICML), PMLR, 2019, https://proceedings.mlr.press/v97/tan19a.html (accessed Dec. 14, 2025).
+
+A. Krizhevsky, I. Sutskever, and G. E. Hinton, “ImageNet classification with deep convolutional neural networks,” in Advances in Neural Information Processing Systems (NeurIPS), 2012. https://proceedings.neurips.cc/paper_files/paper/2012/file/c399862d3b9d6b76c8436e924a68c45b-Paper.pdf (accessed Dec. 14, 2025).
